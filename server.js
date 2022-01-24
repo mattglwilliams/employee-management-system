@@ -77,6 +77,7 @@ const getAllEmployees = () => {
   db.query("SELECT * from employees", function (err, results) {
     if (err) console.error(err);
     console.table(results);
+    return continueApp();
   });
 };
 
