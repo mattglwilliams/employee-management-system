@@ -40,10 +40,29 @@ const startApp = () => {
     });
 };
 
+const continueApp = () => {
+  return inquirer
+    .prompt([
+      {
+        type: "confirm",
+        name: "carryOn",
+        message: "Would you like to do something else?",
+      },
+    ])
+    .then((answer) => {
+      if (answer === "y") {
+        startApp();
+      } else {
+        process.exit(1);
+      }
+    });
+};
+
 const getAllDepartments = () => {
   db.query("SELECT * from department", function (err, results) {
     if (err) console.error(err);
     console.table(results);
+    return continueApp();
   });
 };
 
