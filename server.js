@@ -24,18 +24,21 @@ const startApp = () => {
           "View all roles",
           "View all employees",
           "Add a department",
+          "Add a role",
         ],
       },
     ])
     .then((answer) => {
       if (answer.choices === "View all departments") {
-        getAllDepartments();
+        viewAllDepartments();
       } else if (answer.choices === "View all roles") {
-        getAllRoles();
+        viewAllRoles();
       } else if (answer.choices === "View all employees") {
-        getAllEmployees();
+        viewAllEmployees();
       } else if (answer.choices === "Add a department") {
         addDepartment();
+      } else if (answer.choices === "Add a role") {
+        addRoleInit();
       }
     });
 };
@@ -58,7 +61,7 @@ const continueApp = () => {
     });
 };
 
-const getAllDepartments = () => {
+const viewAllDepartments = () => {
   db.query("SELECT * from department", function (err, results) {
     if (err) console.error(err);
     console.table(results);
@@ -66,14 +69,14 @@ const getAllDepartments = () => {
   });
 };
 
-const getAllRoles = () => {
+const viewAllRoles = () => {
   db.query("SELECT * from roles", function (err, results) {
     if (err) console.error(err);
     console.table(results);
   });
 };
 
-const getAllEmployees = () => {
+const viewAllEmployees = () => {
   db.query("SELECT * from employees", function (err, results) {
     if (err) console.error(err);
     console.table(results);
@@ -96,7 +99,47 @@ const addDepartment = () => {
         function (err) {
           if (err) console.error(err);
           console.log("New department added:");
-          return getAllDepartments();
+          return viewAllDepartments();
+        }
+      );
+    });
+};
+
+const addRoleInit = () => {
+  db.query("SELECT * from department", function (err, results) {
+    if (err) console.error(err);
+    console.table(results);
+    return addRoleQuestions();
+  });
+};
+
+const addRoleQuestions = () => {
+  return inquirer
+    .prompt([
+      {
+        type: "input",
+        name: "department",
+        message:
+          "Please see the table above and enter the ID of the department the role relates too.",
+      },
+      {
+        type: "input",
+        name: "nameOfRole",
+        message: "What is the role?",
+      },
+      {
+        type: "input",
+        name: "salaryOfRole",
+        message: "What is the salary of the role?",
+      },
+    ])
+    .then((answers) => {
+      db.query(
+        `INSERT INTO roles(title, salary, department_id) VALUES("${answers.nameOfRole}", "${answers.salaryOfRole}", "${answers.department}")`,
+        function (err) {
+          if (err) console.error(err);
+          console.log("New role added:");
+          return getAllRoles();
         }
       );
     });
