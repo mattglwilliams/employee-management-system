@@ -25,6 +25,7 @@ const startApp = () => {
           "View all employees",
           "Add a department",
           "Add a role",
+          "Add an employee",
         ],
       },
     ])
@@ -38,7 +39,9 @@ const startApp = () => {
       } else if (answer.choices === "Add a department") {
         addDepartment();
       } else if (answer.choices === "Add a role") {
-        addRoleInit();
+        addRole();
+      } else if (answer.choices === "Add an employee") {
+        addEmployee();
       }
     });
 };
@@ -73,6 +76,7 @@ const viewAllRoles = () => {
   db.query("SELECT * from roles", function (err, results) {
     if (err) console.error(err);
     console.table(results);
+    return continueApp();
   });
 };
 
@@ -105,44 +109,92 @@ const addDepartment = () => {
     });
 };
 
-const addRoleInit = () => {
-  db.query("SELECT * from department", function (err, results) {
-    if (err) console.error(err);
-    console.table(results);
-    return addRoleQuestions();
+const addRole = () => {
+  db.query(`SELECT * FROM department;`, (err, res) => {
+    if (err) throw err;
+    let departmentsList = res.map((department) => ({
+      value: department.id,
+      name: department.department_name,
+    }));
+    console.table(departmentsList);
+    inquirer
+      .prompt([
+        {
+          type: "input",
+          name: "nameOfRole",
+          message: "What is the role?",
+        },
+        {
+          type: "input",
+          name: "salaryOfRole",
+          message: "What is the salary of the role?",
+        },
+        {
+          type: "list",
+          name: "department",
+          message: "Please select the department.",
+          choices: departmentsList,
+        },
+      ])
+      .then((answers) => {
+        db.query(
+          `INSERT INTO roles SET ?`,
+          {
+            title: answers.nameOfRole,
+            salary: answers.salaryOfRole,
+            department_id: answers.department,
+          },
+          function (err) {
+            if (err) console.error(err);
+            console.log("New role added:");
+            return viewAllRoles();
+          }
+        );
+      });
   });
 };
 
-const addRoleQuestions = () => {
-  return inquirer
-    .prompt([
-      {
-        type: "input",
-        name: "department",
-        message:
-          "Please see the table above and enter the ID of the department the role relates too.",
-      },
-      {
-        type: "input",
-        name: "nameOfRole",
-        message: "What is the role?",
-      },
-      {
-        type: "input",
-        name: "salaryOfRole",
-        message: "What is the salary of the role?",
-      },
-    ])
-    .then((answers) => {
-      db.query(
-        `INSERT INTO roles(title, salary, department_id) VALUES("${answers.nameOfRole}", "${answers.salaryOfRole}", "${answers.department}")`,
-        function (err) {
-          if (err) console.error(err);
-          console.log("New role added:");
-          return getAllRoles();
-        }
-      );
-    });
+const addEmployee = () => {
+  db.query(`SELECT * FROM roles;`, (err, res) => {
+    if (err) throw err;
+    let roles = res.map((role) => ({ value: role.id, name: role.title }));
+    console.log(roles);
+    inquirer
+      .prompt([
+        {
+          type: "input",
+          name: "firstName",
+          message: "What is their first name?",
+        },
+        {
+          type: "input",
+          name: "lastName",
+          message: "What is their last name?",
+        },
+        {
+          type: "list",
+          name: "employeeRole",
+          message: "What is their role?",
+          choices: roles,
+        },
+        {
+          type: "list",
+          name: "employeeManager",
+          message: "Who is their manager?",
+          choices: roles,
+        },
+      ])
+      .then((answers) => {
+        db.query(
+          `INSERT INTO employees(first_name, last_name, role_id, manager_id) VALUES("${answers.firstName}", "${answers.lastName}", "${answers.employeeRole}")`,
+          function (err) {
+            if (err) console.error(err);
+            console.log("New employee added:");
+            return viewAllEmployees();
+          }
+        );
+      });
+  });
 };
 
 startApp();
