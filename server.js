@@ -12,7 +12,7 @@ const db = mysql.createConnection(
   console.log("Connected to the employee database")
 );
 
-const startApp = () => {
+const init = () => {
   inquirer
     .prompt([
       {
@@ -29,6 +29,7 @@ const startApp = () => {
           "Add an employee",
           "Update an employees role",
           "Update an employees manager",
+          "QUIT",
         ],
       },
     ])
@@ -51,24 +52,7 @@ const startApp = () => {
         updateEmployeeRole();
       } else if (answer.choices === "Update an employees manager") {
         updateEmployeeManager();
-      }
-    });
-};
-
-const continueApp = () => {
-  inquirer
-    .prompt([
-      {
-        type: "list",
-        name: "carryOn",
-        message: "Would you like to do something else?",
-        choices: ["Yes", "No"],
-      },
-    ])
-    .then((answer) => {
-      if (answer.choices === "Yes") {
-        return startApp();
-      } else {
+      } else if (answer.choices === "QUIT") {
         process.exit(1);
       }
     });
@@ -78,7 +62,7 @@ const viewAllDepartments = () => {
   db.query("SELECT * from department", function (err, res) {
     if (err) console.error(err);
     console.table(res);
-    return continueApp();
+    return init();
   });
 };
 
@@ -86,7 +70,7 @@ const viewAllRoles = () => {
   db.query("SELECT * from roles", function (err, res) {
     if (err) console.error(err);
     console.table(res);
-    return continueApp();
+    return init();
   });
 };
 
@@ -94,7 +78,7 @@ const viewAllEmployees = () => {
   db.query("SELECT * from employees", function (err, res) {
     if (err) console.error(err);
     console.table(res);
-    return continueApp();
+    return init();
   });
 };
 
@@ -116,7 +100,15 @@ const viewEmployeesByManager = () => {
         },
       ])
       .then((answer) => {
-        db.query("SELECT");
+        db.query(
+          `SELECT first_name, last_name from employees WHERE manager_id = ${answer.managers}`,
+          function (err, res) {
+            if (err) console.error(err);
+            console.log("Here are their employees:");
+            console.table(res);
+            return init();
+          }
+        );
       });
   });
 };
@@ -331,4 +323,4 @@ const updateEmployeeManager = () => {
   });
 };
 
-startApp();
+init();
