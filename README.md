@@ -23,7 +23,9 @@ npm i
 
 Firstly, to use this app, make sure you have both node.js and MySQL installed. Once installed, follow the below steps:
 
-- Firstly, in your terminal, navigate to the db folder and log into the MySQL CLI. The command for this is below. PLEASE NOTE: 'root' should be replaced by your username and once you run this command you will need to enter your MySQL password/
+- Firstly, you will need to change the MySQL connection details in the server.js file to your own, either by adding them directly or creating a new .env file.
+
+- Next, in your terminal, navigate to the db folder and log into the MySQL CLI. The command for this is below. PLEASE NOTE: 'root' should be replaced by your username and once you run this command you will need to enter your MySQL password/
 
 ```
 mysql -u root -p
