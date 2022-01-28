@@ -9,7 +9,7 @@
 
 ## Description
 
-For this project, I have used MySQL2 and node.js to create a CLI employee database tracker. You can see a video of it in action here - https://watch.screencastify.com/v/2pJT9xWub2SYPpopS6x0
+For this project, I have used MySQL2 and node.js to create a CLI employee database management system. You can see a video of it in action here - https://watch.screencastify.com/v/2pJT9xWub2SYPpopS6x0
 
 ## Installation
 
