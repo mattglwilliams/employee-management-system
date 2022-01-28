@@ -27,15 +27,11 @@ const init = () => {
           "View all roles",
           "View all employees",
           "View employees by manager",
-          "View employees by department",
           "Add a department",
           "Add a role",
           "Add an employee",
           "Update an employees role",
           "Update an employees manager",
-          "Delete a department",
-          "Delete a role",
-          "Delete an employee",
           "QUIT",
         ],
       },
@@ -49,8 +45,6 @@ const init = () => {
         viewAllEmployees();
       } else if (answer.choices === "View employees by manager") {
         viewEmployeesByManager();
-      } else if (answer.choices === "View employees by department") {
-        viewEmployeesByDepartment();
       } else if (answer.choices === "Add a department") {
         addDepartment();
       } else if (answer.choices === "Add a role") {
@@ -113,38 +107,6 @@ const viewEmployeesByManager = () => {
           message:
             "Please select the manager you would like to see the employees of.",
           choices: employees,
-        },
-      ])
-      .then((answer) => {
-        db.query(
-          `SELECT first_name, last_name from employees WHERE manager_id = ${answer.managers}`,
-          function (err, res) {
-            if (err) console.error(err);
-            console.log("Here are their employees:");
-            console.table(res);
-            return init();
-          }
-        );
-      });
-  });
-};
-
-// Function to view employees in specific departments
-const viewEmployeesByDepartment = () => {
-  db.query("SELECT * from department", function (err, res) {
-    if (err) throw err;
-    let departments = res.map((department) => ({
-      value: department.id,
-      name: department.department_name,
-    }));
-    inquirer
-      .prompt([
-        {
-          type: "list",
-          name: "departments",
-          message:
-            "Please select the department you would like to see the employees of.",
-          choices: departments,
         },
       ])
       .then((answer) => {
