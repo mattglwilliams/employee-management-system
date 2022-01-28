@@ -1,7 +1,9 @@
+// Requiring the dependencies
 require("dotenv").config();
 const inquirer = require("inquirer");
 const mysql = require("mysql2");
 
+// Connecting to the MySQL database and storing it in a variable
 const db = mysql.createConnection(
   {
     host: process.env.HOST,
@@ -12,6 +14,7 @@ const db = mysql.createConnection(
   console.log("Connected to the employee database")
 );
 
+// Initial function to prompt the user with a list of options
 const init = () => {
   inquirer
     .prompt([
@@ -24,11 +27,15 @@ const init = () => {
           "View all roles",
           "View all employees",
           "View employees by manager",
+          "View employees by department",
           "Add a department",
           "Add a role",
           "Add an employee",
           "Update an employees role",
           "Update an employees manager",
+          "Delete a department",
+          "Delete a role",
+          "Delete an employee",
           "QUIT",
         ],
       },
@@ -42,6 +49,8 @@ const init = () => {
         viewAllEmployees();
       } else if (answer.choices === "View employees by manager") {
         viewEmployeesByManager();
+      } else if (answer.choices === "View employees by department") {
+        viewEmployeesByDepartment();
       } else if (answer.choices === "Add a department") {
         addDepartment();
       } else if (answer.choices === "Add a role") {
@@ -53,11 +62,12 @@ const init = () => {
       } else if (answer.choices === "Update an employees manager") {
         updateEmployeeManager();
       } else if (answer.choices === "QUIT") {
-        process.exit(1);
+        process.exit(0);
       }
     });
 };
 
+// Function to view all departments
 const viewAllDepartments = () => {
   db.query("SELECT * from department", function (err, res) {
     if (err) console.error(err);
@@ -66,6 +76,7 @@ const viewAllDepartments = () => {
   });
 };
 
+// Function to view all roles
 const viewAllRoles = () => {
   db.query("SELECT * from roles", function (err, res) {
     if (err) console.error(err);
@@ -74,6 +85,7 @@ const viewAllRoles = () => {
   });
 };
 
+// Function to view all employees
 const viewAllEmployees = () => {
   db.query("SELECT * from employees", function (err, res) {
     if (err) console.error(err);
@@ -82,9 +94,13 @@ const viewAllEmployees = () => {
   });
 };
 
+// Function to view the what employees sit under a certain manager
 const viewEmployeesByManager = () => {
   db.query("SELECT * from employees", function (err, res) {
     if (err) throw err;
+    // Storing the data we get back from the employees table in a variable &
+    // mapping the id, first name and last name to value and name which inquirer
+    // recognises
     let employees = res.map((employee) => ({
       value: employee.id,
       name: employee.first_name + " " + employee.last_name,
@@ -113,6 +129,39 @@ const viewEmployeesByManager = () => {
   });
 };
 
+// Function to view employees in specific departments
+const viewEmployeesByDepartment = () => {
+  db.query("SELECT * from department", function (err, res) {
+    if (err) throw err;
+    let departments = res.map((department) => ({
+      value: department.id,
+      name: department.department_name,
+    }));
+    inquirer
+      .prompt([
+        {
+          type: "list",
+          name: "departments",
+          message:
+            "Please select the department you would like to see the employees of.",
+          choices: departments,
+        },
+      ])
+      .then((answer) => {
+        db.query(
+          `SELECT first_name, last_name from employees WHERE manager_id = ${answer.managers}`,
+          function (err, res) {
+            if (err) console.error(err);
+            console.log("Here are their employees:");
+            console.table(res);
+            return init();
+          }
+        );
+      });
+  });
+};
+
+// Function to add a brand new department
 const addDepartment = () => {
   inquirer
     .prompt([
@@ -134,6 +183,7 @@ const addDepartment = () => {
     });
 };
 
+// Function to add a brand new role
 const addRole = () => {
   db.query(`SELECT * FROM department;`, (err, res) => {
     if (err) throw err;
@@ -178,6 +228,7 @@ const addRole = () => {
   });
 };
 
+// Function to add a brand new employee
 const addEmployee = () => {
   db.query(`SELECT * FROM roles;`, (err, res) => {
     if (err) throw err;
@@ -233,6 +284,7 @@ const addEmployee = () => {
   });
 };
 
+// Function to update a current employee
 const updateEmployeeRole = () => {
   db.query(`SELECT * FROM roles;`, (err, res) => {
     if (err) throw err;
@@ -280,6 +332,7 @@ const updateEmployeeRole = () => {
   });
 };
 
+// Function to update an employee with a new manager
 const updateEmployeeManager = () => {
   db.query(`SELECT * FROM employees;`, (err, res) => {
     if (err) throw err;
@@ -323,4 +376,5 @@ const updateEmployeeManager = () => {
   });
 };
 
+// Calling the first function to start the app and prompt the user with the options
 init();
